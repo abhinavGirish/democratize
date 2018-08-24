@@ -5,11 +5,6 @@ class BlogSpider(scrapy.Spider):
     start_urls = ['https://blog.scrapinghub.com','https://www.vox.com/','https://fivethirtyeight.com/']
 
     def parse(self, response):
-        """for title in response.css('.post-header>h2'):
-            yield {'title': title.css('a ::text').extract_first()}
-
-        for next_page in response.css('div.prev-post > a'):
-            yield response.follow(next_page, self.parse)"""
         for title in response.css("div.hentry"):
             yield {'title': title.css('a ::text').extract_first()}
 
