@@ -1,7 +1,8 @@
 import scrapy
+from scrapy.linkextractors import LinkExtractor
 
-class BlogSpider(scrapy.Spider):
-    name = 'blogspider'
+class NewsSpider(scrapy.Spider):
+    name = 'newsspider'
     start_urls = ['https://blog.scrapinghub.com','https://www.vox.com/',
     'https://fivethirtyeight.com/','https://slate.com/','https://www1.nyc.gov/',
     'https://www.post-gazette.com/','https://www.nytimes.com/']
@@ -24,5 +25,14 @@ class BlogSpider(scrapy.Spider):
             yield {'title': title.css('span ::text').extract_first()}
 
         #new york times
-        for title in response.css("div.css-18y7hud.esl82me2"):
+        for title in response.css("div.css-6p6lnl"):
             yield {'title': title.css('h2 ::text').extract_first()}
+
+            next_page = response.css('div.css-6p6lnl a::attr(href)').extract_first()
+            if next_page is not None:
+                next_page = response.urljoin(next_page)
+                yield scrapy.Request(next_page, callback=self.parseArticle)
+
+    def parseArticle(self, response):
+        yield {'message':"Just entered an article in the New York Times!"}
+
