@@ -11,6 +11,10 @@ class NewsSpider(scrapy.Spider):
         #headlines on fivethirtyeight
         for title in response.css("div.hentry"):
             yield {'title': title.css('a ::text').extract_first()}
+            next_page = title.css('h3 a::attr(href)').extract_first()
+            if next_page is not None:
+                next_page = response.urljoin(next_page)
+                yield scrapy.Request(next_page, callback=self.parseArticle)
 
         #headlines on slate.com
         for title in response.css("div.story-teaser__teaser"):
@@ -28,11 +32,9 @@ class NewsSpider(scrapy.Spider):
         for title in response.css("div.css-6p6lnl"):
             yield {'title': title.css('h2 ::text').extract_first()}
 
-            next_page = response.css('div.css-6p6lnl a::attr(href)').extract_first()
-            if next_page is not None:
-                next_page = response.urljoin(next_page)
-                yield scrapy.Request(next_page, callback=self.parseArticle)
-
+    #parsing the text of the article
     def parseArticle(self, response):
-        yield {'message':"Just entered an article in the New York Times!"}
+        for section in response.css("div.entry-content.single-post-content"):
+            yield {'article_content': section.css('p ::text').extract_first()}
+        #yield {'message':"Just entered an article in fivethirtyeight!"}
 
